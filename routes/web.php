@@ -24,5 +24,6 @@ Route::controller(PaymentController::class)
 ->group(function(){
     Route::get('/token','token')->name('token');
     Route::get('/initiateSTKPush','initiateSTKPush')->name('initiateSTKPush');
+    Route::post('/stkCallback','stkCallback')->name('stkCallback');
 });
 
