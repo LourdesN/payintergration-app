@@ -32,7 +32,7 @@ class PaymentController extends Controller
         $PartyA=254745416760;
         $PartyB='174379';
         $PhoneNumber=254745416760;
-        $CallBackURL='https://2000-41-80-118-14.ngrok-free.app/payments/stkcallback';
+        $CallBackURL='https://2000-41-80-118-14.ngrok-free.app/payments/stkCallback';
         $AccountReference='Room DECO';
         $TransactionDesc='payment for goods';
 
@@ -77,12 +77,11 @@ class PaymentController extends Controller
         }
     }
 
-   public function stkCallback(){
-       $data=file_get_contents('php://input');
-    //    before i created the database data ilikuwa inakuwa stored hapa
-       Storage::disk('local')->put('stk.txt',$data);
+    public function stkCallback() {
+        $data=file_get_contents('php://input');
+        Storage::disk('local')->put('stk.txt',$data);
 
-       $response=json_decode($data);
+        $response=json_decode($data);
 
         $ResultCode=$response->Body->stkCallback->ResultCode;
 
@@ -94,7 +93,7 @@ class PaymentController extends Controller
             $MpesaReceiptNumber=$response->Body->stkCallback->CallbackMetadata->Item[1]->Value;
             //$Balance=$response->Body->stkCallback->CallbackMetadata->Item[2]->Value;
             $TransactionDate=$response->Body->stkCallback->CallbackMetadata->Item[3]->Value;
-            $PhoneNumber=$response->Body->stkCallback->CallbackMetadata->Item[3]->Value;
+            $PhoneNumber=$response->Body->stkCallback->CallbackMetadata->Item[4]->Value;
 
             $payment=STKrequest::where('CheckoutRequestID',$CheckoutRequestID)->firstOrfail();
             $payment->status='Paid';
@@ -115,5 +114,27 @@ class PaymentController extends Controller
 
         }
 
-   }
+    }
+
+// if the request is not updated kwa db i use the query by filling in the checkoutRequest ID
+public function stkQuery(){
+        $accessToken=$this->token();
+        $BusinessShortCode=174379;
+        $PassKey='bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
+        $url='https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query';
+        $Timestamp=Carbon::now()->format('YmdHis');
+        $Password=base64_encode($BusinessShortCode.$PassKey.$Timestamp);
+        $CheckoutRequestID='ws_CO_11102024130250238745416760';
+
+        $response=Http::withToken($accessToken)->post($url,[
+
+            'BusinessShortCode'=>$BusinessShortCode,
+            'Timestamp'=>$Timestamp,
+            'Password'=>$Password,
+            'CheckoutRequestID'=>$CheckoutRequestID
+        ]);
+
+        return $response;
+    }
+    
 }
