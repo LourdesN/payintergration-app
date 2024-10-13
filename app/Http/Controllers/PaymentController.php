@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\C2brequest;
 use App\Models\STKrequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -32,7 +33,7 @@ class PaymentController extends Controller
         $PartyA=254745416760;
         $PartyB='174379';
         $PhoneNumber=254745416760;
-        $CallBackURL='https://2000-41-80-118-14.ngrok-free.app/payments/stkCallback';
+        $CallBackURL=' https://7556-41-80-118-14.ngrok-free.app/payments/stkCallback';
         $AccountReference='Room DECO';
         $TransactionDesc='payment for goods';
 
@@ -136,5 +137,109 @@ public function stkQuery(){
 
         return $response;
     }
+    // customer to business function processing payment from them to till number
+    public function registerUrl(){
+        $accessToken=$this->token();
+        $url='https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl';
+        $ShortCode=600992;
+        $ResponseType='Completed';  //Cancelled
+        $ConfirmationURL='https://7556-41-80-118-14.ngrok-free.app/payments/confirmation';
+        $ValidationURL='https://7556-41-80-118-14.ngrok-free.app/payments/validation';
+
+        $response=Http::withToken($accessToken)->post($url,[
+            'ShortCode'=>$ShortCode,
+            'ResponseType'=>$ResponseType,
+            'ConfirmationURL'=>$ConfirmationURL,
+            'ValidationURL'=>$ValidationURL
+        ]);
+
+        return $response;
+    }
+// request inatoka from the customer like anaenda kwa sim toolkit
+    public function Simulate(){
+        $accessToken=$this->token();
+        $url='https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate';
+        // given in my daraja account under c2b
+        $ShortCode=600992;
+        $CommandID='CustomerPayBillOnline'; //CustomerBuyGoodsOnline
+        $Amount=1;
+        // copy from simulator daraja
+        $Msisdn=254708374149;
+        $BillRefNumber='00000';
+
+        $response=Http::withToken($accessToken)->post($url,[
+            'ShortCode'=>$ShortCode,
+            'CommandID'=>$CommandID,
+            'Amount'=>$Amount,
+            'Msisdn'=>$Msisdn,
+            'BillRefNumber'=>$BillRefNumber
+        ]);
+
+        return $response;
+
+    }
+
+    public function Validation(){
+        $data=file_get_contents('php://input');
+        Storage::disk('local')->put('validation.txt',$data);
+
+        //validation logic
+        
+        return response()->json([
+            'ResultCode'=>0,
+            'ResultDesc'=>'Accepted'
+        ]);
+        
+        /*
+        return response()->json([
+            'ResultCode'=>'C2B00012', (invalid account number)
+            'ResultDesc'=>'Rejected'
+        ])
+        */
+    }
+    public function Confirmation(){
+        $data=file_get_contents('php://input');
+        // nimeeka for debuging
+        Storage::disk('local')->put('confirmation.txt',$data);
+        //save data to DB
+        $response=json_decode($data);
+        $TransactionType=$response->TransactionType;
+        $TransID=$response->TransID;
+        $TransTime=$response->TransTime;
+        $TransAmount=$response->TransAmount;
+        $BusinessShortCode=$response->BusinessShortCode;
+        $BillRefNumber=$response->BillRefNumber;
+        $InvoiceNumber=$response->InvoiceNumber;
+        $OrgAccountBalance=$response->OrgAccountBalance;
+        $ThirdPartyTransID=$response->ThirdPartyTransID;
+        $MSISDN=$response->MSISDN;
+        $FirstName=$response->FirstName;
+        $MiddleName=$response->MiddleName;
+        $LastName=$response->LastName;
+
+        $c2b=new C2brequest;
+        $c2b->TransactionType=$TransactionType;
+        $c2b->TransID=$TransID;
+        $c2b->TransTime=$TransTime;
+        $c2b->TransAmount=$TransAmount;
+        $c2b->BusinessShortCode=$BusinessShortCode;
+        $c2b->BillRefNumber=$BillRefNumber;
+        $c2b->InvoiceNumber=$InvoiceNumber;
+        $c2b->OrgAccountBalance=$OrgAccountBalance;
+        $c2b->ThirdPartyTransID=$ThirdPartyTransID;
+        $c2b->MSISDN=$MSISDN;
+        $c2b->FirstName=$FirstName;
+        $c2b->MiddleName=$MiddleName;
+        $c2b->LastName=$LastName;
+        $c2b->save();
+
+
+        return response()->json([
+            'ResultCode'=>0,
+            'ResultDesc'=>'Accepted'
+        ]);
+        
+    }
+
     
 }
