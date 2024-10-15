@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PaymentController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,5 +31,19 @@ Route::controller(PaymentController::class)
     Route::post('/validation','Validation')->name('validation');
     Route::post('/confirmation','Confirmation')->name('confirmation');
     Route::get('/simulate','Simulate')->name('simulate');
+    Route::get('/qrcode','qrcode')->name('qrcode');
 });
 
+Route::post('/initiateSTKPush', [PaymentController::class, 'initiateStkPush'])->name('payments.initiateSTKPush');
+
+
+Route::get('/stk_push_form', function () {
+    return view('payments.stk_push_form');
+})->name('payments.stk_push_form');
+
+
+
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Auth::routes();
