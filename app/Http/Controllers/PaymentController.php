@@ -175,7 +175,7 @@ public function stkQuery(){
         $accessToken=$this->token();
         $url='https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate';
         // given in my daraja account under c2b
-        $ShortCode=600992;
+        $ShortCode=600999;
         $CommandID='CustomerPayBillOnline'; //CustomerBuyGoodsOnline
         $Amount=1;
         // copy from simulator daraja
@@ -261,37 +261,32 @@ public function stkQuery(){
         $consumerKey=\config('safaricom.consumer_Key');
         $consumerSecret=\config('safaricom.consumer_Secret');
         
-        $authUrl='https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+        $authUrl='https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
 
         $request=Http::withBasicAuth($consumerKey,$consumerSecret)->get($authUrl);
 
         $accessToken=$request['access_token'];
 
-        $MerchantName='TEST SUPERMARKET';
-        $RefNo='Invoice Test';
+        $MerchantName='ESKULI REVISION';
+        $RefNo='gggsgsgg';
         $Amount=1;
-        $TrxCode='BG';  //BG-buy goods till, WA-mpesa agent, SM-send money, SB-send to business
-        $CPI=373132;
-        $Size=300;
+        $TrxCode='PB'; //BG-buy goods till, WA-mpesa agent, SM-send money, SB-send to business
+        $CPI=572555;
 
-        $url='https://sandbox.safaricom.co.ke/mpesa/qrcode/v1/generate';
+        $url='https://api.safaricom.co.ke/mpesa/qrcode/v1/generate';
 
         $response=Http::withToken($accessToken)->post($url,[
             'MerchantName'=>$MerchantName,
             'RefNo'=>$RefNo,
             'Amount'=>$Amount,
             'TrxCode'=>$TrxCode,
-            'CPI'=>$CPI,
-            'Size'=>$Size
+            'CPI'=>$CPI
         ]);
-        return $response;
 
-        // $data=$response['QRCode'];
+        $data=$response['QRCode'];
 
-        // return view('welcome')->with('qrcode',$data);
+        return view('welcome')->with('qrcode',$data);
 
-
-    }
-    
+    } 
     
 }

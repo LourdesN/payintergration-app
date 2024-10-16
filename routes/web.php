@@ -41,7 +41,7 @@ Route::get('/stk_push_form', function () {
     return view('payments.stk_push_form');
 })->name('payments.stk_push_form');
 
-
+Route::get('/qrcode', [PaymentController::class, 'qrcode'])->name('payments.qrcode');
 
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

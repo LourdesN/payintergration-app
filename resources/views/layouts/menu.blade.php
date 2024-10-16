@@ -11,6 +11,12 @@
         <p>STK Push</p>
     </a>
 </li>
+<li class="nav-item">
+    <a href="{{ route('payments.qrcode') }}" class="nav-link {{ Request::is('qrcode') ? 'active' : '' }}">
+    <i class="fas fa-money-bill-wave-alt"></i>
+        <p>QR Code</p>
+    </a>
+</li>
 
 
 
